@@ -91,15 +91,25 @@ form {
     width: 80% !important;
   }
 
-  .btns {
+  .btn.btn-dark.col-1.offset-3 {
+    width: 20% !important;
+    margin-left: 0 !important;
+  }
+
+  .edit-btn {
+    columns: 2;
+    color: white;
+    width: 5rem;
+    padding-left: 1.2rem;
+  }
+
+  .del-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
   }
+}
 
-  .btn.btn-dark.col-1.offset-3 {
-    width: 50% !important;
-    margin-left: 0 !important;
-  }
+.edit-btn {
+    background-color: rgb(68, 66, 66) !important;
 }

@@ -26,7 +26,7 @@
       <p class="card-text"><%= listing.location %></p>
     </div>
     <form
-      action="/bookings/<%= listing._id %>"
+      action="/listings/<%= listing._id %>"
       method="POST"
       class="text-center mt-2"
     >
@@ -42,7 +42,7 @@
       >Edit</a
     >
     <form method="POST" action="/listings/<%=listing._id%>?_method=DELETE">
-      <button class="btn btn-dark offset-5">Delete</button>
+      <button class="btn btn-danger offset-5 del-btn">Delete</button>
     </form>
   </div>
   <% } %>

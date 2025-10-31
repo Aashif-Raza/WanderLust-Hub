@@ -58,3 +58,12 @@ module.exports.isReviewAuthor = async(req, res, next) => {
     }
     next();
 }
+
+module.exports.isLoggedInToBook = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    req.session.redirectUrl = req.originalUrl;
+    req.flash("error", "You must be logged in to Book!");
+    return res.redirect("/login");
+  }
+  next();
+};

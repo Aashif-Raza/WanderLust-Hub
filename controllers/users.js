@@ -23,13 +23,13 @@ module.exports.signup = async (req, res) => {
   }
 };
 
-module.exports.renderLoginForm = (req, res) => {
+module.exports.renderLoginForm = (req, res) => { 
   res.render("users/login.ejs");
 };
 
 module.exports.login = async (req, res) => {
-  req.flash("succes", "Welcome back to Wanderlust");
   let redirectUrl = res.locals.redirectUrl || "/listings";
+  req.flash("succes", "Welcome back to Wanderlust");
   res.redirect(redirectUrl);
 };
 

@@ -88,8 +88,12 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get("/", (req, res) => {
+  res.redirect("/listings");
+});
+
 const bookingRoutes = require("./routes/booking");
-app.use("/bookings", bookingRoutes);
+app.use("/listings", bookingRoutes);
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
@@ -106,11 +110,6 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render("error.ejs", {err});
     // res.status(statusCode).send(message);
 });
-
-
-
-
-
 
 app.listen(8080, ()=>{
     console.log("Server listening on port 8080");
