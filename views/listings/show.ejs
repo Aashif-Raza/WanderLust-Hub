@@ -7,10 +7,10 @@
 </script>
 
 <div class="row mt-3">
-  <div class="col-8 offset-3">
+  <!-- Left Column: Listing Details -->
+  <div class="col-12 col-md-7 offset-md-1">
     <h3><%= listing.title %></h3>
-  </div>
-  <div class="card col-6 offset-3 show-card listing-card">
+    <div class="card show-card listing-card">
     <img
       src="<%= listing.image.url %>"
       class="card-img-top show-img"
@@ -25,29 +25,22 @@
       <p class="card-text"><%= listing.country %></p>
       <p class="card-text"><%= listing.location %></p>
     </div>
-    <form
-      action="/listings/<%= listing._id %>"
-      method="POST"
-      class="text-center mt-2"
-    >
-      <button type="submit" class="btn btn-success col-4">Book Now!</button>
-    </form>
   </div>
 
   <% if(currUser && listing.owner._id.equals(currUser._id)) { %>
-  <div class="btns">
+  <div class="btns mb-4">
     <a
       href="/listings/<%=listing._id%>/edit"
-      class="btn btn-dark col-1 offset-3 edit-btn"
+      class="btn btn-dark col-2 edit-btn"
       >Edit</a
     >
     <form method="POST" action="/listings/<%=listing._id%>?_method=DELETE">
-      <button class="btn btn-danger offset-5 del-btn">Delete</button>
+      <button class="btn btn-danger ms-3 del-btn">Delete</button>
     </form>
   </div>
   <% } %>
 
-  <div class="col-8 offset-3 mb-3">
+  <div class="mb-3">
     <% if(currUser) { %>
     <hr />
     <h4>Leave a Review</h4>
@@ -149,10 +142,136 @@
     <% } %>
   </div>
 
-  <div class="col-6 offset-3 mb-3">
+  <div class="mb-3">
     <h3>Where you'll be</h3>
-    <div id="map"></div>
+    <div id="map" style="width: 100%;"></div>
+  </div>
+</div> <!-- End of Left Column -->
+
+<!-- Right Column: Booking Widget -->
+<div class="col-12 col-md-4">
+  <div class="card booking-card shadow-sm border-0 sticky-top" style="top: 20px; border-radius: 1rem; padding: 1.5rem;">
+    <div class="card-body p-0">
+      <h4 class="card-title fw-bold mb-4">
+        &#8377;<%= listing.price.toLocaleString("en-IN") %> <span class="fs-6 fw-normal text-muted">night</span>
+      </h4>
+
+      <div class="border rounded-3 mb-3">
+        <div class="d-flex border-bottom">
+          <div class="p-2 w-50 border-end">
+            <label class="form-label mb-0" style="font-size: 0.7rem; font-weight: 800;">CHECK-IN</label>
+            <input type="date" class="form-control border-0 p-0 shadow-none bg-transparent" id="checkin" style="font-size: 0.9rem;">
+          </div>
+          <div class="p-2 w-50">
+            <label class="form-label mb-0" style="font-size: 0.7rem; font-weight: 800;">CHECKOUT</label>
+            <input type="date" class="form-control border-0 p-0 shadow-none bg-transparent" id="checkout" style="font-size: 0.9rem;">
+          </div>
+        </div>
+        <div class="p-2">
+          <label class="form-label mb-0" style="font-size: 0.7rem; font-weight: 800;">GUESTS</label>
+          <select class="form-select border-0 p-0 shadow-none bg-transparent" style="font-size: 0.9rem;">
+            <option value="1">1 guest</option>
+            <option value="2">2 guests</option>
+            <option value="3">3 guests</option>
+            <option value="4">4 guests</option>
+            <option value="5">5+ guests</option>
+          </select>
+        </div>
+      </div>
+
+      <button onclick="handleReservation(this)" class="btn w-100 fw-bold mb-3 add-btn text-white py-2" style="border-radius: 0.5rem;">Reserve</button>
+
+      <div class="text-center text-muted mb-3" style="font-size: 0.9rem;">You won't be charged yet</div>
+
+      <div id="price-breakdown" class="d-none">
+        <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 1rem;">
+          <span class="text-decoration-underline" id="price-calculation">&#8377;<%= listing.price.toLocaleString("en-IN") %> x <span id="nights-count">0</span> nights</span>
+          <span id="subtotal">&#8377;0</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 text-muted" style="font-size: 1rem;">
+          <span class="text-decoration-underline">Cleaning fee</span>
+          <span>&#8377;500</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3 text-muted" style="font-size: 1rem;">
+          <span class="text-decoration-underline">Service fee</span>
+          <span id="service-fee">&#8377;0</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold" style="font-size: 1.1rem;">
+          <span>Total before taxes</span>
+          <span id="total-price">&#8377;0</span>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
+</div> <!-- End of Row -->
+
+<script>
+  // Simple logic to calculate days and show price breakdown
+  const checkinInput = document.getElementById('checkin');
+  const checkoutInput = document.getElementById('checkout');
+  const priceBreakdown = document.getElementById('price-breakdown');
+  const nightsCountSpan = document.getElementById('nights-count');
+  const subtotalSpan = document.getElementById('subtotal');
+  const serviceFeeSpan = document.getElementById('service-fee');
+  const totalPriceSpan = document.getElementById('total-price');
+
+  const nightlyRate = <%= listing.price %>;
+
+  function calculatePrice() {
+    if(checkinInput.value && checkoutInput.value) {
+      const start = new Date(checkinInput.value);
+      const end = new Date(checkoutInput.value);
+      const diffTime = end - start;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if(diffDays > 0) {
+        priceBreakdown.classList.remove('d-none');
+        nightsCountSpan.textContent = diffDays;
+        
+        const subtotal = diffDays * nightlyRate;
+        // Mock service fee as 12% of subtotal
+        const serviceFee = Math.round(subtotal * 0.12);
+        const total = subtotal + 500 + serviceFee; // +500 cleaning fee
+
+        subtotalSpan.innerHTML = `&#8377;${subtotal.toLocaleString("en-IN")}`;
+        serviceFeeSpan.innerHTML = `&#8377;${serviceFee.toLocaleString("en-IN")}`;
+        totalPriceSpan.innerHTML = `&#8377;${total.toLocaleString("en-IN")}`;
+      } else {
+        priceBreakdown.classList.add('d-none');
+      }
+    }
+  }
+
+  checkinInput.addEventListener('change', calculatePrice);
+  checkoutInput.addEventListener('change', calculatePrice);
+  
+  // Set min dates to prevent past booking
+  const today = new Date().toISOString().split('T')[0];
+  checkinInput.min = today;
+  checkinInput.addEventListener('change', () => {
+    checkoutInput.min = checkinInput.value;
+  });
+
+  // Reservation Feedback Logic
+  function handleReservation(btn) {
+    <% if (!currUser) { %>
+      window.location.href = "/login";
+      return;
+    <% } %>
+
+    if(!checkinInput.value || !checkoutInput.value) {
+      alert("Please select your check-in and checkout dates to proceed!");
+      return;
+    }
+    alert("Success! Your room has been successfully reserved. We look forward to hosting you!");
+    btn.innerText = "Reserved!";
+    btn.style.backgroundColor = "#28a745"; // Bootstrap success green color
+    btn.classList.remove("add-btn");
+    btn.disabled = true;
+  }
+</script>
 
 <script src="/js/map.js"></script>
